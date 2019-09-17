@@ -7,3 +7,5 @@ app = Flask(__name__)
 
 app.register_blueprint(index)
 app.config['JSON_AS_ASCII'] = False
+
+application = app
