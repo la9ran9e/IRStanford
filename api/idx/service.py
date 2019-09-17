@@ -1,3 +1,4 @@
+import os
 from typing import Dict
 
 from core.index import Index, Source
@@ -23,8 +24,22 @@ class Service:
         self._index.field = field
         self._index.feed(file)
 
-    def feed_src(self, src, path):
+    def feed_src(self, src, path, format=None):
         if src not in self._sources:
-            self._sources[src] = Source()
+            self._sources[src] = Source(format=format)
 
         self._sources[src].feed(path)
+
+
+def prepare_idx(idx: Service, docs, src, prefix='../dataset',
+                field='cardHeader__headerDescriptionText'):
+    for key, info  in src.items():
+        format = info.get('format', None)
+        for dataset in info['vals']:
+            path = os.path.join(prefix, dataset)
+            idx.feed_src(key, path, format=format)
+
+    for dataset in docs:
+        path = os.path.join(prefix, dataset)
+        with open(path, 'rb') as file:
+            idx.feed(field, file)

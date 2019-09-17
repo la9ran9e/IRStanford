@@ -34,6 +34,7 @@ class Index(ProcessingMapDocPersistentIndexT):
             doc = json.loads(line.rstrip())
             self.process(doc, self._offset)
             self._offset += 1
+        print('offset =', self._offset)
 
     def dump(self, output):
         with open(output, 'a') as f:
@@ -61,9 +62,10 @@ class Index(ProcessingMapDocPersistentIndexT):
 
 
 class Source(SimpleIndexT, PersistentT):
-    def __init__(self, index_path=None):
+    def __init__(self, index_path=None, format=None):
         self._index = list() if not index_path else self.load(index_path)
         self._files = dict()
+        self.format = format
 
     def load(self, path):
         with open(path, 'rb') as f:
@@ -77,9 +79,10 @@ class Source(SimpleIndexT, PersistentT):
     def feed(self, path):
         self._files[path] = src = open(path, 'r')
         while True:
+            pos = src.tell()
             if src.readline() == '':
                 break
-            self._index.append((path, src.tell()))
+            self._index.append((path, pos))
 
     def dump(self, path):
         with open(path, 'a') as f:
@@ -92,7 +95,10 @@ class Source(SimpleIndexT, PersistentT):
             raise IndexError('Offset out of index')
         path, n = self._index[offset]
         self._files[path].seek(n)
-        return self._files[path].readline().strip()
+        doc = self._files[path].readline().strip()
+        if self.format =='json':
+            doc = json.loads(doc)
+        return doc
 
     def cleanup(self):
         self._index = list()

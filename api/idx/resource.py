@@ -29,6 +29,7 @@ def feed(field):
 
 @endpoint.route('search/<string:word>', methods=['GET'])
 def search(word):
+    print(service._sources)
     try:
         hits = service.search(word)
     except Exception as err:
@@ -42,13 +43,15 @@ def feed_src(src):
     if not request.files:
         return '', 400
 
+    format = request.args.get('f', None)
+
     files = request.files.values()
     for file in files:
         path = file.name
         file.save(path)
         file.close()
         try:
-            service.feed_src(src, path)
+            service.feed_src(src, path, format=format)
         except Exception as err:
             print('err', err)
             return '', 400
