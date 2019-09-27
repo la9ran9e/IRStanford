@@ -44,7 +44,7 @@ def feed(field):
 
 @endpoint.route('get/<string:word>', methods=['GET'])
 def get(word):
-    exclude = request.args.get("exc", [])
+    exclude = request.args.get("exc", "")
     exclude = exclude.replace(" ", "").split(",")
     try:
         hits = service.get(word)
@@ -64,7 +64,7 @@ def search():
     if merge_type not in {"merge", "skip_merge"}:
         return '', 400
 
-    exclude = request.args.get("exc", [])
+    exclude = request.args.get("exc", "")
     exclude = exclude.replace(" ", "").split(",")
 
     query_sequence = q.split()
