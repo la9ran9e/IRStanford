@@ -2,9 +2,26 @@ from flask import Blueprint, request, jsonify
 
 from .service import Service
 
+
+class HitsResponse:
+    def __init__(self, hits, exclude, **kwargs):
+        self._data = {
+            "hits": hits,
+            "total": len(hits),
+            **kwargs
+        }
+        self._exclusions = set(exclude)
+
+    @property
+    def data(self):
+        return {k: v for k, v in self._data.items() if k not in self._exclusions}
+
+    @property
+    def json(self):
+        return jsonify(self.data)
+
+
 endpoint = Blueprint('index', __name__, url_prefix='/idx')
-
-
 service = Service()
 
 
@@ -27,13 +44,14 @@ def feed(field):
 
 @endpoint.route('get/<string:word>', methods=['GET'])
 def get(word):
-    print(service._sources)
+    exclude = request.args.get("exc", [])
+    exclude = exclude.replace(" ", "").split(",")
     try:
         hits = service.get(word)
     except Exception as err:
         raise
     else:
-        return jsonify(hits), 200
+        return HitsResponse(hits, exclude).json, 200
 
 
 @endpoint.route('search', methods=['GET'])
@@ -41,9 +59,17 @@ def search():
     q = request.args.get('q', None)
     if not q:
         return '', 400
+
+    merge_type = request.args.get('mt', "skip_merge")
+    if merge_type not in {"merge", "skip_merge"}:
+        return '', 400
+
+    exclude = request.args.get("exc", [])
+    exclude = exclude.replace(" ", "").split(",")
+
     query_sequence = q.split()
-    hits = service.search(query_sequence)
-    return jsonify(hits), 200
+    hits, stat = service.search(query_sequence, merge_type)
+    return HitsResponse(hits, exclude, stat=stat, merge_type=merge_type).json, 200
 
 
 @endpoint.route('source/<string:src>/feed', methods=['POST'])
