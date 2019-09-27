@@ -1,10 +1,8 @@
 from flask import Blueprint, request, jsonify
+
 from .service import Service
 
-
-endpoint = Blueprint('index',
-                     __name__,
-                     url_prefix='/idx')
+endpoint = Blueprint('index', __name__, url_prefix='/idx')
 
 
 service = Service()
@@ -27,15 +25,25 @@ def feed(field):
         file.close()
 
 
-@endpoint.route('search/<string:word>', methods=['GET'])
-def search(word):
+@endpoint.route('get/<string:word>', methods=['GET'])
+def get(word):
     print(service._sources)
     try:
-        hits = service.search(word)
+        hits = service.get(word)
     except Exception as err:
         raise
     else:
         return jsonify(hits), 200
+
+
+@endpoint.route('search', methods=['GET'])
+def search():
+    q = request.args.get('q', None)
+    if not q:
+        return '', 400
+    query_sequence = q.split()
+    hits = service.search(query_sequence)
+    return jsonify(hits), 200
 
 
 @endpoint.route('source/<string:src>/feed', methods=['POST'])

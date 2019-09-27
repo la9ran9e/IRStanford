@@ -2,6 +2,7 @@ import os
 from typing import Dict
 
 from core.index import Index, Source
+from utils import merge
 
 
 class Service:
@@ -9,8 +10,23 @@ class Service:
         self._index = Index()
         self._sources: Dict[Source] = dict()
 
-    def search(self, word):
+    def get(self, word):
         offsets = self._index.search(word)
+        return self._hits(offsets)
+
+    def search(self, query):
+        lens = []
+        for word in query:
+            lens.append((word, len(self._index.search(word))))
+        lens.sort(key=lambda x: x[1])
+
+        res = self._index.search(lens[0][0])
+        for i in range(1, len(lens)):
+            res_ = self._index.search(lens[i][0])
+            res = merge(res, res_)
+        return self._hits(res)
+
+    def _hits(self, offsets):
         hits = []
         for offset in offsets:
             hit = dict()

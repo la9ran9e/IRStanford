@@ -13,12 +13,14 @@ app.config['JSON_AS_ASCII'] = False
 
 src = {
     'raw_data': {'vals': ['filials.raw_data.0', 'filials.raw_data.1',
-                          'filials.raw_data.2', 'filials.raw_data.3'],
+                          'filials.raw_data.2', 'filials.raw_data.3',
+                          'filials.raw_data.4'],
                  'format': 'json'
                  },
-    'url': {'vals': ['filials.slice']}
+    'url': {'vals': ['filials.slice', 'filials.slice.1']}
 }
-docs = ['filials.raw_data.0', 'filials.raw_data.1', 'filials.raw_data.2', 'filials.raw_data.3']
+docs = ['filials.raw_data.0', 'filials.raw_data.1', 'filials.raw_data.2', 'filials.raw_data.3',
+        'filials.raw_data.4']
 
 prepare_idx(
     service,
