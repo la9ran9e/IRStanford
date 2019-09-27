@@ -66,16 +66,18 @@ class Merge:
             idb = b[j]
             if ida < idb:
                 skip = min(skip_a, len(a)-1-i)
-                if a[i+skip] <= idb:
-                    i += skip
-                else:
-                    i += 1
+                if skip != 0:
+                    if a[i+skip] <= idb:
+                        i += skip
+                        continue
+                i += 1
             elif ida > idb:
                 skip = min(skip_b, len(b)-1-j)
-                if b[j+skip] <= ida:
-                    j += skip
-                else:
-                    j += 1
+                if skip != 0:
+                    if b[j+skip] <= ida:
+                        j += skip
+                        continue
+                j += 1
             else:
                 res.append(ida)
                 i += 1
